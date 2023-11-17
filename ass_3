@@ -1,0 +1,83 @@
+!pip install tensorflow
+!pip install keras
+
+import numpy as np
+import pandas as pd
+import random
+import tensorflow as tf
+import matplotlib.pyplot as plt
+#from matplotlib import pyplot as plt
+from sklearn.metrics import accuracy_score
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Flatten, Conv2D, Dense, MaxPooling2D
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.datasets import mnist
+
+#loading and pre-processing the image data
+mnist=tf.keras.datasets.mnist
+(x_train,y_train),(x_test,y_test)=mnist.load_data()
+input_shape=(28,28,1)
+
+#making sure value are float so that we can get decimal afer division
+x_train=x_train.reshape(x_train.shape[0],28,28,1)
+x_test=x_test.reshape(x_test.shape[0],28,28,1)
+x_train=x_train.astype('float32')
+Loading [MathJax]/ex_test xtension=s/x_test Safe.js .astype('float32')
+
+
+#Normalizing the rgb codes by dividing it to the max RGB value
+x_train=x_train/255
+x_test=x_test/255
+print("shape of training :",x_train.shape)
+
+#b Defining the model's Architecture
+model=Sequential()
+model.add(Conv2D(28,kernel_size=(3,3),input_shape=input_shape))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Flatten())
+model.add(Dense(200,activation="relu"))
+model.add(Dense(10,activation="softmax"))
+model.summary()
+
+# c training the model
+model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=["accuracy
+model.fit(x_train,y_train,epochs=2)
+
+#d estimating the models performance
+test_loss,test_acc=model.evaluate(x_test,y_test)
+print("Loss=%.3f" %test_loss)
+print("Accuracy=%.3f" %test_acc)
+
+#showingg image at position[] from dataset
+image=x_train[0]
+plt.imshow(np.squeeze(image),cmap='gray')
+plt.show()
+
+#predecting class of img
+image=image.reshape(1,image.shape[0],image.shape[1],image.shape[2])
+predict_model=model.predict([image])
+print("predicted class:{}".format(np.argmax(predict_model)))
+
+def plot_digit(image, digit, plt, i):
+ plt.subplot(4, 5, i + 1)
+ plt.imshow(image, cmap=plt.get_cmap('gray'))
+ plt.title(f"Digit: {digit}")
+ plt.xticks([])
+ plt.yticks([])
+plt.figure(figsize=(16, 10))
+for i in range(20):
+ plot_digit(x_train[i], y_train[i], plt, i)
+plt.show()
+
+n=random.randint(0,9999)
+plt.imshow(x_test[n])
+plt.show()
+
+predicted_value=model.predict(x_test)
+print("Handwritten number in the image is= %d" %np.argmax(predicted_value[n]))
+
+score = model.evaluate(x_test, y_test, verbose=0)
+print('Test loss:', score[0]) #Test loss: 0.0296396646054
+print('Test accuracy:', score[1])
